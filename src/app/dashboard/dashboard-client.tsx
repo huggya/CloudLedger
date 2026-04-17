@@ -7,6 +7,7 @@ import { translateDatabaseError } from "@/lib/messages";
 import type { LedgerRecord, RecordForm, RecordType } from "@/types/record";
 
 const commonCategories = ["餐饮", "交通", "购物", "工资", "住房", "娱乐", "医疗", "学习", "其他"];
+const currentMonth = getMonthKey(new Date());
 
 const emptyForm: RecordForm = {
   type: "expense",
@@ -30,6 +31,9 @@ export function DashboardClient({ userId, email }: DashboardClientProps) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
+  const [budgetAmount, setBudgetAmount] = useState("");
+  const [budgetSaving, setBudgetSaving] = useState(false);
+  const [budgetMessage, setBudgetMessage] = useState("");
   const [filters, setFilters] = useState({
     startDate: "",
     endDate: "",
@@ -53,9 +57,25 @@ export function DashboardClient({ userId, email }: DashboardClientProps) {
     setLoading(false);
   }, [supabase]);
 
+  const loadBudget = useCallback(async () => {
+    const { data, error } = await supabase
+      .from("monthly_budgets")
+      .select("budget")
+      .eq("month", currentMonth)
+      .maybeSingle();
+
+    if (error) {
+      setBudgetMessage(translateDatabaseError(error.message));
+      return;
+    }
+
+    setBudgetAmount(data?.budget ? String(data.budget) : "");
+  }, [supabase]);
+
   useEffect(() => {
     void loadRecords();
-  }, [loadRecords]);
+    void loadBudget();
+  }, [loadBudget, loadRecords]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -103,6 +123,39 @@ export function DashboardClient({ userId, email }: DashboardClientProps) {
       return;
     }
     setRecords((current) => current.filter((record) => record.id !== id));
+  }
+
+  async function handleSaveBudget(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setBudgetSaving(true);
+    setBudgetMessage("");
+
+    const budget = Number(budgetAmount);
+    if (!Number.isFinite(budget) || budget <= 0) {
+      setBudgetMessage("月总预算必须大于 0。");
+      setBudgetSaving(false);
+      return;
+    }
+
+    const { error } = await supabase
+      .from("monthly_budgets")
+      .upsert(
+        {
+          user_id: userId,
+          month: currentMonth,
+          budget,
+          updated_at: new Date().toISOString()
+        },
+        { onConflict: "user_id,month" }
+      );
+
+    setBudgetSaving(false);
+    if (error) {
+      setBudgetMessage(translateDatabaseError(error.message));
+      return;
+    }
+
+    setBudgetMessage("月预算已保存。");
   }
 
   async function handleSignOut() {
@@ -154,6 +207,50 @@ export function DashboardClient({ userId, email }: DashboardClientProps) {
       { income: 0, expense: 0, balance: 0 }
     );
   }, [filteredRecords]);
+
+  const currentMonthExpense = useMemo(() => {
+    return records.reduce((total, record) => {
+      if (record.type === "expense" && record.date.startsWith(currentMonth)) {
+        return total + Number(record.amount);
+      }
+      return total;
+    }, 0);
+  }, [records]);
+
+  const budgetValue = Number(budgetAmount);
+  const budgetBalance = Number.isFinite(budgetValue) && budgetValue > 0 ? budgetValue - currentMonthExpense : null;
+
+  function applyQuickFilter(range: "thisMonth" | "lastMonth" | "thisYear" | "all") {
+    if (range === "all") {
+      setFilters({ startDate: "", endDate: "", type: "all", category: "" });
+      return;
+    }
+
+    const now = new Date();
+    if (range === "thisMonth") {
+      setFilters({
+        ...filters,
+        startDate: formatDate(new Date(now.getFullYear(), now.getMonth(), 1)),
+        endDate: formatDate(new Date(now.getFullYear(), now.getMonth() + 1, 0))
+      });
+      return;
+    }
+
+    if (range === "lastMonth") {
+      setFilters({
+        ...filters,
+        startDate: formatDate(new Date(now.getFullYear(), now.getMonth() - 1, 1)),
+        endDate: formatDate(new Date(now.getFullYear(), now.getMonth(), 0))
+      });
+      return;
+    }
+
+    setFilters({
+      ...filters,
+      startDate: formatDate(new Date(now.getFullYear(), 0, 1)),
+      endDate: formatDate(new Date(now.getFullYear(), 11, 31))
+    });
+  }
 
   return (
     <main className="min-h-screen bg-slate-50">
@@ -260,6 +357,12 @@ export function DashboardClient({ userId, email }: DashboardClientProps) {
         <section className="space-y-6">
           <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
             <h2 className="text-lg font-bold text-slate-950">筛选</h2>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <button className="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100" onClick={() => applyQuickFilter("thisMonth")} type="button">本月</button>
+              <button className="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100" onClick={() => applyQuickFilter("lastMonth")} type="button">上月</button>
+              <button className="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100" onClick={() => applyQuickFilter("thisYear")} type="button">今年</button>
+              <button className="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100" onClick={() => applyQuickFilter("all")} type="button">全部</button>
+            </div>
             <div className="mt-4 grid gap-4 md:grid-cols-4">
               <FilterInput label="开始日期" type="date" value={filters.startDate} onChange={(value) => setFilters({ ...filters, startDate: value })} />
               <FilterInput label="结束日期" type="date" value={filters.endDate} onChange={(value) => setFilters({ ...filters, endDate: value })} />
@@ -293,10 +396,39 @@ export function DashboardClient({ userId, email }: DashboardClientProps) {
             </div>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+            <h2 className="text-lg font-bold text-slate-950">月预算</h2>
+            <form className="mt-4 grid gap-4 md:grid-cols-[1fr_auto]" onSubmit={handleSaveBudget}>
+              <label className="block">
+                <span className="text-sm font-medium text-slate-700">当月总预算（{currentMonth}）</span>
+                <input
+                  className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 outline-none focus:border-brand-700 focus:ring-2 focus:ring-brand-100"
+                  type="number"
+                  min="0.01"
+                  step="0.01"
+                  value={budgetAmount}
+                  onChange={(event) => setBudgetAmount(event.target.value)}
+                  placeholder="例如 3000"
+                  required
+                />
+              </label>
+              <button
+                className="h-11 self-end rounded-md bg-brand-700 px-5 text-sm font-semibold text-white transition hover:bg-brand-900 disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={budgetSaving}
+                type="submit"
+              >
+                {budgetSaving ? "保存中..." : "保存预算"}
+              </button>
+            </form>
+            {budgetMessage ? <p className="mt-3 text-sm text-slate-600">{budgetMessage}</p> : null}
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-5">
             <StatCard label="总收入" value={stats.income} tone="income" />
             <StatCard label="总支出" value={stats.expense} tone="expense" />
             <StatCard label="当前结余" value={stats.balance} tone="balance" />
+            <StatCard label="当月预算" value={budgetValue > 0 ? budgetValue : 0} tone="balance" />
+            <StatCard label="预算结余" value={budgetBalance ?? 0} tone={budgetBalance !== null && budgetBalance < 0 ? "expense" : "income"} />
           </div>
 
           <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
@@ -400,4 +532,17 @@ function formatMoney(value: number) {
     style: "currency",
     currency: "CNY"
   }).format(value);
+}
+
+function formatDate(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function getMonthKey(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  return `${year}-${month}`;
 }

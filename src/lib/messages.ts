@@ -39,6 +39,10 @@ export function translateDatabaseError(message: string) {
     return "没有权限操作这条账单。";
   }
 
+  if (lowerMessage.includes("could not find the table") && lowerMessage.includes("monthly_budgets")) {
+    return "预算表还没有创建，请先在 Supabase 执行最新的 schema.sql。";
+  }
+
   if (lowerMessage.includes("violates check constraint")) {
     return "账单内容不符合要求，请检查类型、分类和金额。";
   }

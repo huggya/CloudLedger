@@ -18,3 +18,12 @@ export type RecordForm = {
   date: string;
   note: string;
 };
+
+export type MonthlyBudget = {
+  id: string;
+  user_id: string;
+  month: string;
+  budget: number;
+  created_at: string;
+  updated_at: string;
+};
