@@ -3,7 +3,10 @@
 import { useRouter } from "next/navigation";
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { translateDatabaseError } from "@/lib/messages";
 import type { LedgerRecord, RecordForm, RecordType } from "@/types/record";
+
+const commonCategories = ["餐饮", "交通", "购物", "工资", "住房", "娱乐", "医疗", "学习", "其他"];
 
 const emptyForm: RecordForm = {
   type: "expense",
@@ -43,7 +46,7 @@ export function DashboardClient({ userId, email }: DashboardClientProps) {
       .order("created_at", { ascending: false });
 
     if (error) {
-      setMessage(error.message);
+      setMessage(translateDatabaseError(error.message));
     } else {
       setRecords((data ?? []) as LedgerRecord[]);
     }
@@ -81,7 +84,7 @@ export function DashboardClient({ userId, email }: DashboardClientProps) {
 
     setSaving(false);
     if (result.error) {
-      setMessage(result.error.message);
+      setMessage(translateDatabaseError(result.error.message));
       return;
     }
 
@@ -96,7 +99,7 @@ export function DashboardClient({ userId, email }: DashboardClientProps) {
 
     const { error } = await supabase.from("records").delete().eq("id", id);
     if (error) {
-      setMessage(error.message);
+      setMessage(translateDatabaseError(error.message));
       return;
     }
     setRecords((current) => current.filter((record) => record.id !== id));
@@ -192,9 +195,15 @@ export function DashboardClient({ userId, email }: DashboardClientProps) {
                 className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 outline-none focus:border-brand-700 focus:ring-2 focus:ring-brand-100"
                 value={form.category}
                 onChange={(event) => setForm({ ...form, category: event.target.value })}
+                list="category-presets"
                 placeholder="餐饮、交通、工资..."
                 required
               />
+              <datalist id="category-presets">
+                {commonCategories.map((category) => (
+                  <option key={category} value={category} />
+                ))}
+              </datalist>
             </label>
             <label className="block">
               <span className="text-sm font-medium text-slate-700">金额</span>
