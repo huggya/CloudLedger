@@ -61,7 +61,7 @@ export function DashboardClient({ userId, email }: DashboardClientProps) {
 
     const amount = Number(form.amount);
     if (!Number.isFinite(amount) || amount <= 0) {
-      setMessage("Amount must be greater than 0.");
+      setMessage("金额必须大于 0。");
       setSaving(false);
       return;
     }
@@ -91,7 +91,7 @@ export function DashboardClient({ userId, email }: DashboardClientProps) {
   }
 
   async function handleDelete(id: string) {
-    const confirmed = window.confirm("Delete this record?");
+    const confirmed = window.confirm("确定删除这条账单吗？");
     if (!confirmed) return;
 
     const { error } = await supabase.from("records").delete().eq("id", id);
@@ -158,7 +158,7 @@ export function DashboardClient({ userId, email }: DashboardClientProps) {
         <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-sm font-semibold text-brand-700">CloudLedger</p>
-            <h1 className="text-2xl font-bold text-slate-950">My Ledger</h1>
+            <h1 className="text-2xl font-bold text-slate-950">我的记账本</h1>
             <p className="mt-1 text-sm text-slate-500">{email}</p>
           </div>
           <button
@@ -166,38 +166,38 @@ export function DashboardClient({ userId, email }: DashboardClientProps) {
             onClick={handleSignOut}
             type="button"
           >
-            Sign out
+            退出登录
           </button>
         </div>
       </header>
 
       <div className="mx-auto grid max-w-6xl gap-6 px-4 py-6 lg:grid-cols-[360px_1fr]">
         <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-          <h2 className="text-lg font-bold text-slate-950">{editingId ? "Edit record" : "New record"}</h2>
+          <h2 className="text-lg font-bold text-slate-950">{editingId ? "编辑账单" : "新增账单"}</h2>
           <form className="mt-5 space-y-4" onSubmit={handleSubmit}>
             <label className="block">
-              <span className="text-sm font-medium text-slate-700">Type</span>
+              <span className="text-sm font-medium text-slate-700">类型</span>
               <select
                 className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 outline-none focus:border-brand-700 focus:ring-2 focus:ring-brand-100"
                 value={form.type}
                 onChange={(event) => setForm({ ...form, type: event.target.value as RecordType })}
               >
-                <option value="expense">Expense</option>
-                <option value="income">Income</option>
+                <option value="expense">支出</option>
+                <option value="income">收入</option>
               </select>
             </label>
             <label className="block">
-              <span className="text-sm font-medium text-slate-700">Category</span>
+              <span className="text-sm font-medium text-slate-700">分类</span>
               <input
                 className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 outline-none focus:border-brand-700 focus:ring-2 focus:ring-brand-100"
                 value={form.category}
                 onChange={(event) => setForm({ ...form, category: event.target.value })}
-                placeholder="Food, transport, salary..."
+                placeholder="餐饮、交通、工资..."
                 required
               />
             </label>
             <label className="block">
-              <span className="text-sm font-medium text-slate-700">Amount</span>
+              <span className="text-sm font-medium text-slate-700">金额</span>
               <input
                 className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 outline-none focus:border-brand-700 focus:ring-2 focus:ring-brand-100"
                 type="number"
@@ -209,7 +209,7 @@ export function DashboardClient({ userId, email }: DashboardClientProps) {
               />
             </label>
             <label className="block">
-              <span className="text-sm font-medium text-slate-700">Date</span>
+              <span className="text-sm font-medium text-slate-700">日期</span>
               <input
                 className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 outline-none focus:border-brand-700 focus:ring-2 focus:ring-brand-100"
                 type="date"
@@ -219,7 +219,7 @@ export function DashboardClient({ userId, email }: DashboardClientProps) {
               />
             </label>
             <label className="block">
-              <span className="text-sm font-medium text-slate-700">Note</span>
+              <span className="text-sm font-medium text-slate-700">备注</span>
               <textarea
                 className="mt-1 min-h-24 w-full rounded-md border border-slate-300 px-3 py-2 outline-none focus:border-brand-700 focus:ring-2 focus:ring-brand-100"
                 value={form.note}
@@ -233,7 +233,7 @@ export function DashboardClient({ userId, email }: DashboardClientProps) {
                 disabled={saving}
                 type="submit"
               >
-                {saving ? "Saving..." : editingId ? "Save changes" : "Add record"}
+                {saving ? "保存中..." : editingId ? "保存修改" : "新增账单"}
               </button>
               {editingId ? (
                 <button
@@ -241,7 +241,7 @@ export function DashboardClient({ userId, email }: DashboardClientProps) {
                   onClick={cancelEdit}
                   type="button"
                 >
-                  Cancel
+                  取消
                 </button>
               ) : null}
             </div>
@@ -250,30 +250,30 @@ export function DashboardClient({ userId, email }: DashboardClientProps) {
 
         <section className="space-y-6">
           <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-            <h2 className="text-lg font-bold text-slate-950">Filters</h2>
+            <h2 className="text-lg font-bold text-slate-950">筛选</h2>
             <div className="mt-4 grid gap-4 md:grid-cols-4">
-              <FilterInput label="Start date" type="date" value={filters.startDate} onChange={(value) => setFilters({ ...filters, startDate: value })} />
-              <FilterInput label="End date" type="date" value={filters.endDate} onChange={(value) => setFilters({ ...filters, endDate: value })} />
+              <FilterInput label="开始日期" type="date" value={filters.startDate} onChange={(value) => setFilters({ ...filters, startDate: value })} />
+              <FilterInput label="结束日期" type="date" value={filters.endDate} onChange={(value) => setFilters({ ...filters, endDate: value })} />
               <label className="block">
-                <span className="text-sm font-medium text-slate-700">Type</span>
+                <span className="text-sm font-medium text-slate-700">类型</span>
                 <select
                   className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 outline-none focus:border-brand-700 focus:ring-2 focus:ring-brand-100"
                   value={filters.type}
                   onChange={(event) => setFilters({ ...filters, type: event.target.value })}
                 >
-                  <option value="all">All</option>
-                  <option value="expense">Expense</option>
-                  <option value="income">Income</option>
+                  <option value="all">全部</option>
+                  <option value="expense">支出</option>
+                  <option value="income">收入</option>
                 </select>
               </label>
               <label className="block">
-                <span className="text-sm font-medium text-slate-700">Category</span>
+                <span className="text-sm font-medium text-slate-700">分类</span>
                 <select
                   className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 outline-none focus:border-brand-700 focus:ring-2 focus:ring-brand-100"
                   value={filters.category}
                   onChange={(event) => setFilters({ ...filters, category: event.target.value })}
                 >
-                  <option value="">All categories</option>
+                  <option value="">全部分类</option>
                   {categories.map((category) => (
                     <option key={category} value={category}>
                       {category}
@@ -285,46 +285,46 @@ export function DashboardClient({ userId, email }: DashboardClientProps) {
           </div>
 
           <div className="grid gap-4 sm:grid-cols-3">
-            <StatCard label="Income" value={stats.income} tone="income" />
-            <StatCard label="Expense" value={stats.expense} tone="expense" />
-            <StatCard label="Balance" value={stats.balance} tone="balance" />
+            <StatCard label="总收入" value={stats.income} tone="income" />
+            <StatCard label="总支出" value={stats.expense} tone="expense" />
+            <StatCard label="当前结余" value={stats.balance} tone="balance" />
           </div>
 
           <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
             <div className="border-b border-slate-200 p-5">
-              <h2 className="text-lg font-bold text-slate-950">Records</h2>
-              <p className="mt-1 text-sm text-slate-500">{filteredRecords.length} records</p>
+              <h2 className="text-lg font-bold text-slate-950">账单列表</h2>
+              <p className="mt-1 text-sm text-slate-500">共 {filteredRecords.length} 条记录</p>
             </div>
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-slate-200 text-sm">
                 <thead className="bg-slate-100 text-left text-slate-600">
                   <tr>
-                    <th className="px-4 py-3 font-semibold">Date</th>
-                    <th className="px-4 py-3 font-semibold">Type</th>
-                    <th className="px-4 py-3 font-semibold">Category</th>
-                    <th className="px-4 py-3 text-right font-semibold">Amount</th>
-                    <th className="px-4 py-3 font-semibold">Note</th>
-                    <th className="px-4 py-3 text-right font-semibold">Actions</th>
+                    <th className="px-4 py-3 font-semibold">日期</th>
+                    <th className="px-4 py-3 font-semibold">类型</th>
+                    <th className="px-4 py-3 font-semibold">分类</th>
+                    <th className="px-4 py-3 text-right font-semibold">金额</th>
+                    <th className="px-4 py-3 font-semibold">备注</th>
+                    <th className="px-4 py-3 text-right font-semibold">操作</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {loading ? (
-                    <tr><td className="px-4 py-8 text-center text-slate-500" colSpan={6}>Loading...</td></tr>
+                    <tr><td className="px-4 py-8 text-center text-slate-500" colSpan={6}>加载中...</td></tr>
                   ) : filteredRecords.length === 0 ? (
-                    <tr><td className="px-4 py-8 text-center text-slate-500" colSpan={6}>No records yet</td></tr>
+                    <tr><td className="px-4 py-8 text-center text-slate-500" colSpan={6}>暂无账单</td></tr>
                   ) : (
                     filteredRecords.map((record) => (
                       <tr key={record.id} className="bg-white">
                         <td className="whitespace-nowrap px-4 py-3">{record.date}</td>
-                        <td className="whitespace-nowrap px-4 py-3">{record.type === "income" ? "Income" : "Expense"}</td>
+                        <td className="whitespace-nowrap px-4 py-3">{record.type === "income" ? "收入" : "支出"}</td>
                         <td className="whitespace-nowrap px-4 py-3">{record.category}</td>
                         <td className={`whitespace-nowrap px-4 py-3 text-right font-semibold ${record.type === "income" ? "text-emerald-700" : "text-rose-700"}`}>
                           {formatMoney(record.amount)}
                         </td>
                         <td className="max-w-52 px-4 py-3 text-slate-600">{record.note || "-"}</td>
                         <td className="whitespace-nowrap px-4 py-3 text-right">
-                          <button className="mr-3 font-semibold text-brand-700 hover:text-brand-900" onClick={() => startEdit(record)} type="button">Edit</button>
-                          <button className="font-semibold text-red-600 hover:text-red-800" onClick={() => handleDelete(record.id)} type="button">Delete</button>
+                          <button className="mr-3 font-semibold text-brand-700 hover:text-brand-900" onClick={() => startEdit(record)} type="button">编辑</button>
+                          <button className="font-semibold text-red-600 hover:text-red-800" onClick={() => handleDelete(record.id)} type="button">删除</button>
                         </td>
                       </tr>
                     ))

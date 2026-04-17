@@ -20,23 +20,23 @@ export default async function HomePage() {
             CloudLedger
           </p>
           <h1 className="text-4xl font-bold leading-tight text-slate-950 sm:text-6xl">
-            Personal ledger for the public web
+            公网可访问的个人记账本
           </h1>
           <p className="mt-6 text-lg leading-8 text-slate-600">
-            Sign in from desktop or mobile, then manage only your own income and expense records with Supabase Auth and RLS.
+            在电脑或手机上登录后，安全管理自己的收入和支出记录。账单数据由 Supabase Auth 和 RLS 隔离保护。
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Link
               href="/signup"
               className="inline-flex h-11 items-center justify-center rounded-md bg-brand-700 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-900"
             >
-              Create account
+              创建账号
             </Link>
             <Link
               href="/login"
               className="inline-flex h-11 items-center justify-center rounded-md border border-slate-300 bg-white px-5 text-sm font-semibold text-slate-900 shadow-sm transition hover:bg-slate-100"
             >
-              Sign in
+              登录
             </Link>
           </div>
         </div>

@@ -33,10 +33,10 @@ export default function LoginPage() {
   return (
     <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-10">
       <div className="w-full max-w-md rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
-        <h1 className="text-2xl font-bold text-slate-950">Sign in to CloudLedger</h1>
+        <h1 className="text-2xl font-bold text-slate-950">登录 CloudLedger</h1>
         <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
           <label className="block">
-            <span className="text-sm font-medium text-slate-700">Email</span>
+            <span className="text-sm font-medium text-slate-700">邮箱</span>
             <input
               className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 outline-none focus:border-brand-700 focus:ring-2 focus:ring-brand-100"
               type="email"
@@ -46,7 +46,7 @@ export default function LoginPage() {
             />
           </label>
           <label className="block">
-            <span className="text-sm font-medium text-slate-700">Password</span>
+            <span className="text-sm font-medium text-slate-700">密码</span>
             <input
               className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 outline-none focus:border-brand-700 focus:ring-2 focus:ring-brand-100"
               type="password"
@@ -61,13 +61,13 @@ export default function LoginPage() {
             disabled={loading}
             type="submit"
           >
-            {loading ? "Signing in..." : "Sign in"}
+            {loading ? "登录中..." : "登录"}
           </button>
         </form>
         <p className="mt-5 text-sm text-slate-600">
-          No account yet?{" "}
+          还没有账号？{" "}
           <Link className="font-semibold text-brand-700 hover:text-brand-900" href="/signup">
-            Sign up
+            去注册
           </Link>
         </p>
       </div>
