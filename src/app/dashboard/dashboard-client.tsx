@@ -571,7 +571,9 @@ function StatCard({
   return (
     <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
       <p className="text-sm font-medium text-slate-500">{label}</p>
-      <p className={`mt-2 text-2xl font-bold ${color}`}>{formatMoney(value)}</p>
+      <p className={`mt-2 break-words text-xl font-bold leading-tight sm:text-2xl lg:text-xl xl:text-2xl ${color}`}>
+        {formatMoney(value)}
+      </p>
     </div>
   );
 }
