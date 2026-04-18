@@ -125,6 +125,37 @@ export function DashboardClient({ userId, email }: DashboardClientProps) {
     setRecords((current) => current.filter((record) => record.id !== id));
   }
 
+  function handleExportRecords() {
+    if (records.length === 0) {
+      setMessage("暂无账单可导出。");
+      return;
+    }
+
+    const header = ["日期", "类型", "分类", "金额", "备注", "创建时间"];
+    const rows = records.map((record) => [
+      record.date,
+      record.type === "income" ? "收入" : "支出",
+      record.category,
+      String(record.amount),
+      record.note ?? "",
+      new Date(record.created_at).toLocaleString("zh-CN")
+    ]);
+
+    const csv = [header, ...rows]
+      .map((row) => row.map(escapeCsvValue).join(","))
+      .join("\r\n");
+    const blob = new Blob(["\ufeff", csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.download = `cloudledger-records-${formatDate(new Date())}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  }
+
   async function handleSaveBudget(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setBudgetSaving(true);
@@ -432,9 +463,18 @@ export function DashboardClient({ userId, email }: DashboardClientProps) {
           </div>
 
           <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
-            <div className="border-b border-slate-200 p-5">
-              <h2 className="text-lg font-bold text-slate-950">账单列表</h2>
-              <p className="mt-1 text-sm text-slate-500">共 {filteredRecords.length} 条记录</p>
+            <div className="flex flex-col gap-3 border-b border-slate-200 p-5 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 className="text-lg font-bold text-slate-950">账单列表</h2>
+                <p className="mt-1 text-sm text-slate-500">共 {filteredRecords.length} 条记录</p>
+              </div>
+              <button
+                className="h-10 rounded-md border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-800 transition hover:bg-slate-100"
+                onClick={handleExportRecords}
+                type="button"
+              >
+                导出全部账单
+              </button>
             </div>
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-slate-200 text-sm">
@@ -539,6 +579,14 @@ function formatDate(date: Date) {
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
+}
+
+function escapeCsvValue(value: string) {
+  const normalized = value.replace(/\r?\n/g, " ");
+  if (/[",\n\r]/.test(normalized)) {
+    return `"${normalized.replace(/"/g, '""')}"`;
+  }
+  return normalized;
 }
 
 function getMonthKey(date: Date) {
