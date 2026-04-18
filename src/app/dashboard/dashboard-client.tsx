@@ -292,13 +292,22 @@ export function DashboardClient({ userId, email }: DashboardClientProps) {
             <h1 className="text-2xl font-bold text-slate-950">我的记账本</h1>
             <p className="mt-1 text-sm text-slate-500">{email}</p>
           </div>
-          <button
-            className="h-10 rounded-md border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-800 transition hover:bg-slate-100"
-            onClick={handleSignOut}
-            type="button"
-          >
-            退出登录
-          </button>
+          <div className="flex flex-wrap gap-2">
+            <button
+              className="h-10 rounded-md bg-brand-700 px-4 text-sm font-semibold text-white transition hover:bg-brand-900"
+              onClick={handleExportRecords}
+              type="button"
+            >
+              导出账单
+            </button>
+            <button
+              className="h-10 rounded-md border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-800 transition hover:bg-slate-100"
+              onClick={handleSignOut}
+              type="button"
+            >
+              退出登录
+            </button>
+          </div>
         </div>
       </header>
 
