@@ -106,6 +106,44 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
 4. 部署后，将 Vercel 生成的公网域名加入 Supabase `Authentication -> URL Configuration` 的 Site URL 和 Redirect URLs。
 5. 重新部署或刷新应用，即可通过公网访问。
 
+## Cloudflare Workers 部署
+
+如果 `vercel.app` 在某些手机网络上打不开，可以把同一个项目部署到 Cloudflare Workers，使用 Cloudflare 免费域名。
+
+1. 安装依赖后执行构建：
+
+```bash
+npm run build:cloudflare
+```
+
+2. 登录 Cloudflare：
+
+```bash
+npx wrangler login
+```
+
+3. 部署：
+
+```bash
+npm run deploy:cloudflare
+```
+
+4. 部署成功后，Cloudflare 会给出类似下面的地址：
+
+```text
+https://cloudledger.your-subdomain.workers.dev
+```
+
+5. 将这个新地址加入 Supabase `Authentication -> URL Configuration`：
+
+```text
+Site URL:
+https://cloudledger.your-subdomain.workers.dev
+
+Redirect URLs:
+https://cloudledger.your-subdomain.workers.dev/**
+```
+
 ## Supabase SQL
 
 SQL 文件位于 `supabase/schema.sql`，包含：

@@ -10,3 +10,10 @@ yarn-error.log*
 pnpm-debug.log*
 .next-dev.log
 .next-dev.err.log
+.dev.vars
+.open-next
+.wrangler
+cloudflare-env.d.ts
+
+# OpenNext
+.open-next
