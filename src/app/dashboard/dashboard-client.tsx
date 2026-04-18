@@ -463,7 +463,7 @@ export function DashboardClient({ userId, email }: DashboardClientProps) {
             {budgetMessage ? <p className="mt-3 text-sm text-slate-600">{budgetMessage}</p> : null}
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-5">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
             <StatCard label="总收入" value={stats.income} tone="income" />
             <StatCard label="总支出" value={stats.expense} tone="expense" />
             <StatCard label="当前结余" value={stats.balance} tone="balance" />
@@ -571,7 +571,7 @@ function StatCard({
   return (
     <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
       <p className="text-sm font-medium text-slate-500">{label}</p>
-      <p className={`mt-2 break-words text-xl font-bold leading-tight sm:text-2xl lg:text-xl xl:text-2xl ${color}`}>
+      <p className={`mt-2 whitespace-nowrap text-lg font-bold leading-tight sm:text-xl ${color}`}>
         {formatMoney(value)}
       </p>
     </div>
