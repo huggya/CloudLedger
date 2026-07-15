@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { translateAuthError } from "@/lib/messages";
 import { createClient } from "@/lib/supabase/client";
 
@@ -12,6 +12,52 @@ export default function ResetPasswordPage() {
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+
+    async function prepareRecoverySession() {
+      const {
+        data: { session }
+      } = await supabase.auth.getSession();
+
+      if (session) {
+        if (active) {
+          setReady(true);
+        }
+        return;
+      }
+
+      const code = new URLSearchParams(window.location.search).get("code");
+
+      if (!code) {
+        if (active) {
+          setMessage("重置链接无效或已过期，请重新发送重置邮件。");
+        }
+        return;
+      }
+
+      const { error } = await supabase.auth.exchangeCodeForSession(code);
+
+      if (!active) {
+        return;
+      }
+
+      if (error) {
+        setMessage(translateAuthError(error.message));
+        return;
+      }
+
+      setReady(true);
+    }
+
+    prepareRecoverySession();
+
+    return () => {
+      active = false;
+    };
+  }, [supabase]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -51,13 +97,19 @@ export default function ResetPasswordPage() {
           {message ? <p className="text-sm text-slate-600">{message}</p> : null}
           <button
             className="h-11 w-full rounded-md bg-brand-700 text-sm font-semibold text-white transition hover:bg-brand-900 disabled:cursor-not-allowed disabled:opacity-60"
-            disabled={loading}
+            disabled={loading || !ready}
             type="submit"
           >
-            {loading ? "保存中..." : "保存新密码"}
+            {loading ? "保存中..." : ready ? "保存新密码" : "等待重置链接验证"}
           </button>
         </form>
         <p className="mt-5 text-sm text-slate-600">
+          需要重新发送邮件？{" "}
+          <Link className="font-semibold text-brand-700 hover:text-brand-900" href="/forgot-password">
+            重置密码
+          </Link>
+        </p>
+        <p className="mt-3 text-sm text-slate-600">
           已经改好？{" "}
           <Link className="font-semibold text-brand-700 hover:text-brand-900" href="/login">
             去登录
