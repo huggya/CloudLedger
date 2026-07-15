@@ -29,6 +29,15 @@ export function translateAuthError(message: string) {
     return "当前暂时不允许注册，请检查 Supabase 的邮箱注册设置。";
   }
 
+  if (
+    lowerMessage.includes("failed to fetch") ||
+    lowerMessage.includes("networkerror") ||
+    lowerMessage.includes("fetch failed") ||
+    lowerMessage.includes("load failed")
+  ) {
+    return "连接 Supabase 失败，请检查网络、代理或部署环境变量。";
+  }
+
   return message || "操作失败，请稍后再试。";
 }
 
