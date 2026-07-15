@@ -31,25 +31,49 @@ export default function ResetPasswordPage() {
 
       const code = new URLSearchParams(window.location.search).get("code");
 
-      if (!code) {
-        if (active) {
-          setMessage("重置链接无效或已过期，请重新发送重置邮件。");
+      if (code) {
+        const { error } = await supabase.auth.exchangeCodeForSession(code);
+
+        if (!active) {
+          return;
         }
+
+        if (error) {
+          setMessage(translateAuthError(error.message));
+          return;
+        }
+
+        setReady(true);
         return;
       }
 
-      const { error } = await supabase.auth.exchangeCodeForSession(code);
+      const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+      const accessToken = hashParams.get("access_token");
+      const refreshToken = hashParams.get("refresh_token");
 
-      if (!active) {
+      if (accessToken && refreshToken) {
+        const { error } = await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken
+        });
+
+        if (!active) {
+          return;
+        }
+
+        if (error) {
+          setMessage(translateAuthError(error.message));
+          return;
+        }
+
+        window.history.replaceState(null, "", window.location.pathname);
+        setReady(true);
         return;
       }
 
-      if (error) {
-        setMessage(translateAuthError(error.message));
-        return;
+      if (active) {
+        setMessage("重置链接无效或已过期，请重新发送重置邮件。");
       }
-
-      setReady(true);
     }
 
     prepareRecoverySession();
